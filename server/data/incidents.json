@@ -1,0 +1,242 @@
+[
+  {
+    "id": "inc-1793363464162",
+    "title": "Test Street Light Issue",
+    "category": "Electricity & Outages",
+    "severity": "Low",
+    "description": "Luminaire dark near 5th cross",
+    "location": {
+      "lat": 12.9715,
+      "lng": 77.641,
+      "address": "5th Cross, Indiranagar",
+      "neighbourhood": "Indiranagar",
+      "ward": "Ward 112"
+    },
+    "imageUrl": "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80",
+    "status": "Unverified",
+    "isAnonymous": false,
+    "reporterId": "usr-guest",
+    "reporterName": "Local Resident",
+    "createdAt": "2026-10-30T12:31:04.162Z",
+    "updatedAt": "2026-10-30T12:31:04.162Z",
+    "upvotes": [
+      "usr-guest"
+    ],
+    "disputes": [],
+    "confirmationsCount": 2,
+    "disputesCount": 0,
+    "isFlaggedFalse": false,
+    "mergedReportsCount": 2,
+    "timeline": [
+      {
+        "id": "tl-srv-1793363464162",
+        "timestamp": "2026-10-30T12:31:04.162Z",
+        "title": "Incident Logged to Master Telemetry",
+        "description": "Received and verified by NeighbourNet backend server.",
+        "actor": "Resident",
+        "role": "Resident",
+        "actionType": "report"
+      },
+      {
+        "id": "tl-srv-dup-1793363476922",
+        "timestamp": "2026-10-30T12:31:16.922Z",
+        "title": "Concurring Report Clustered (Backend Auto-Merge)",
+        "description": "Backend duplicate detector identified match within 16m. Auto-clustered into this ticket.",
+        "actor": "Resident",
+        "role": "Resident",
+        "actionType": "duplicate_merged"
+      }
+    ]
+  },
+  {
+    "id": "inc-101",
+    "title": "Severe Arterial Pothole on 100ft Road",
+    "category": "Road Hazards & Potholes",
+    "severity": "High",
+    "description": "Deep road crater located in the middle commuting lane near 12th Main junction. Two scooters have already suffered rim damage.",
+    "location": {
+      "lat": 12.9719,
+      "lng": 77.6412,
+      "address": "100ft Road, opposite Toit Brewpub, Indiranagar",
+      "neighbourhood": "Indiranagar",
+      "ward": "Ward 112"
+    },
+    "imageUrl": "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80",
+    "status": "Community Verified",
+    "isAnonymous": false,
+    "reporterId": "usr-882",
+    "reporterName": "Priya Sharma",
+    "createdAt": "2026-10-30T08:28:24.100Z",
+    "updatedAt": "2026-10-30T11:28:24.104Z",
+    "upvotes": [
+      "usr-101",
+      "usr-102",
+      "usr-103",
+      "usr-104",
+      "usr-current-1"
+    ],
+    "disputes": [],
+    "confirmationsCount": 5,
+    "disputesCount": 0,
+    "isFlaggedFalse": false,
+    "mergedReportsCount": 1,
+    "assignedTo": "Municipal Road Works (PWD)",
+    "assignedAt": "2026-10-30T10:28:24.104Z",
+    "timeline": [
+      {
+        "id": "t-1",
+        "timestamp": "2026-10-30T08:28:24.104Z",
+        "title": "Incident Reported",
+        "description": "Priya Sharma reported a high-severity road pothole with photo evidence.",
+        "actor": "Priya Sharma",
+        "role": "Resident",
+        "actionType": "report"
+      },
+      {
+        "id": "t-2",
+        "timestamp": "2026-10-30T09:28:24.104Z",
+        "title": "Community Verified (Threshold Reached)",
+        "description": "5 independent residents verified and confirmed the hazard location.",
+        "actor": "Neighbourhood Consensus",
+        "role": "Community",
+        "actionType": "upvote"
+      },
+      {
+        "id": "t-3",
+        "timestamp": "2026-10-30T10:28:24.104Z",
+        "title": "Dispatched to Municipal PWD",
+        "description": "Auto-routed to Municipal Road Works division for patch repair.",
+        "actor": "Admin Moderation",
+        "role": "Admin",
+        "actionType": "assign"
+      }
+    ]
+  },
+  {
+    "id": "inc-102",
+    "title": "Snapping Overhead Electric Cable Dangling Near Footpath",
+    "category": "Electricity & Outages",
+    "severity": "Critical",
+    "description": "Post-rain storm, a heavy insulated cable broke free from transformer bracket and is hanging within 1.6m of children walking path.",
+    "location": {
+      "lat": 12.9754,
+      "lng": 77.6385,
+      "address": "6th Main Rd, near Defence Colony Playground",
+      "neighbourhood": "Defence Colony",
+      "ward": "Ward 112"
+    },
+    "imageUrl": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80",
+    "status": "In Progress",
+    "isAnonymous": false,
+    "reporterId": "usr-331",
+    "reporterName": "Kavita Rao",
+    "createdAt": "2026-10-30T04:28:24.104Z",
+    "updatedAt": "2026-10-30T11:58:24.104Z",
+    "upvotes": [
+      "usr-110",
+      "usr-111",
+      "usr-112",
+      "usr-113",
+      "usr-114",
+      "usr-115"
+    ],
+    "disputes": [],
+    "confirmationsCount": 6,
+    "disputesCount": 0,
+    "isFlaggedFalse": false,
+    "mergedReportsCount": 2,
+    "assignedTo": "BESCOM Electricity Board",
+    "assignedAt": "2026-10-30T06:28:24.104Z",
+    "timeline": [
+      {
+        "id": "t-4",
+        "timestamp": "2026-10-30T04:28:24.104Z",
+        "title": "Critical Incident Reported",
+        "description": "Live electrical cable hazard reported by Kavita Rao.",
+        "actor": "Kavita Rao",
+        "role": "Resident",
+        "actionType": "report"
+      },
+      {
+        "id": "t-5",
+        "timestamp": "2026-10-30T06:28:24.104Z",
+        "title": "Emergency Priority Escalation",
+        "description": "Assigned to BESCOM Fast Response Unit.",
+        "actor": "System AI Emergency Router",
+        "role": "System",
+        "actionType": "assign"
+      }
+    ]
+  },
+  {
+    "id": "inc-103",
+    "title": "Clean Drinking Water Pipe Burst - Flooding 4th Cross",
+    "category": "Water Leakage & Shortage",
+    "severity": "High",
+    "description": "Underground high pressure pipe cracked. Clean drinking water pooling over 50 meters of the residential street.",
+    "location": {
+      "lat": 12.9682,
+      "lng": 77.6455,
+      "address": "4th Cross, HAL 2nd Stage, Indiranagar",
+      "neighbourhood": "HAL 2nd Stage",
+      "ward": "Ward 112"
+    },
+    "imageUrl": "https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=800&q=80",
+    "status": "Community Verified",
+    "isAnonymous": true,
+    "reporterId": "anon-992",
+    "reporterName": "Anonymous Resident",
+    "createdAt": "2026-10-30T00:28:24.104Z",
+    "updatedAt": "2026-10-30T07:28:24.104Z",
+    "upvotes": [
+      "usr-201",
+      "usr-202",
+      "usr-203",
+      "usr-204"
+    ],
+    "disputes": [],
+    "confirmationsCount": 4,
+    "disputesCount": 0,
+    "isFlaggedFalse": false,
+    "mergedReportsCount": 1,
+    "assignedTo": "BWSSB Water Supply",
+    "assignedAt": "2026-10-30T08:28:24.104Z",
+    "timeline": []
+  },
+  {
+    "id": "inc-104",
+    "title": "Fallen Tree Branch Obstructing Morning Bus Route",
+    "category": "Civic & Infrastructure",
+    "severity": "Medium",
+    "description": "Heavy Gulmohar tree limb snapped during high winds. Partially blocks one lane of city bus route 138.",
+    "location": {
+      "lat": 12.9789,
+      "lng": 77.6421,
+      "address": "Old Airport Road feeder lane near Domlur flyover",
+      "neighbourhood": "Domlur / Indiranagar Border",
+      "ward": "Ward 112"
+    },
+    "imageUrl": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80",
+    "status": "Resolved",
+    "isAnonymous": false,
+    "reporterId": "usr-current-1",
+    "reporterName": "Arjun Mehta",
+    "createdAt": "2026-10-29T08:28:24.104Z",
+    "updatedAt": "2026-10-30T06:28:24.104Z",
+    "upvotes": [
+      "usr-101",
+      "usr-105",
+      "usr-109"
+    ],
+    "disputes": [],
+    "confirmationsCount": 3,
+    "disputesCount": 0,
+    "isFlaggedFalse": false,
+    "mergedReportsCount": 1,
+    "assignedTo": "Municipal Forest / Tree Wing",
+    "resolvedAt": "2026-10-30T06:28:24.104Z",
+    "resolvedBy": "Horticulture Team Alpha",
+    "resolutionNotes": "Tree limb cut into manageable logs and transported away. Road completely clear for bus transit.",
+    "timeline": []
+  }
+]

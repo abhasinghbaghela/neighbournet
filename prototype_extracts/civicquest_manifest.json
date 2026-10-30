@@ -1,0 +1,15 @@
+{
+  "short_name": "CivicQuest",
+  "name": "CivicQuest AI",
+  "icons": [
+    {
+      "src": "QUEST.png",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#10b981",
+  "background_color": "#020617"
+}

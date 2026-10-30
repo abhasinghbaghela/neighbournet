@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /incident-evidence/{allPaths=**} {
+      // Allow public read for community hazard visibility
+      allow read: if true;
+      // Allow upload if authenticated, max 10MB, and valid image type
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+    match /resolution-proofs/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && (request.auth.token.role == 'admin' || request.auth.token.role == 'authority')
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}
