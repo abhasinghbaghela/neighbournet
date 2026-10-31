@@ -86,7 +86,9 @@ export default function Sidebar({
     { id: 'verify', label: 'Community Verification', icon: CheckSquare, badge: unverifiedCount > 0 ? unverifiedCount : undefined },
     { id: 'clusters', label: 'Duplicate Clustering', icon: GitFork },
     { id: 'health', label: 'Health Score', icon: Activity },
-    { id: 'admin', label: 'Authority Admin', icon: Shield },
+    ...(user.role === 'admin' || user.role === 'authority'
+      ? [{ id: 'admin', label: user.role === 'admin' ? 'Society Admin Portal' : 'Municipal Admin Portal', icon: Shield }]
+      : []),
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotificationCount > 0 ? unreadNotificationCount : undefined }
   ];
 
@@ -97,13 +99,6 @@ export default function Sidebar({
       setActiveTab(tabId);
     }
     if (onItemClick) onItemClick();
-  };
-
-  const toggleResidentView = () => {
-    const rolesOrder: UserRole[] = ['resident', 'volunteer', 'authority', 'admin'];
-    const currentIdx = rolesOrder.indexOf(user.role);
-    const nextRole = rolesOrder[(currentIdx + 1) % rolesOrder.length];
-    setRole(nextRole);
   };
 
   return (
@@ -159,20 +154,18 @@ export default function Sidebar({
 
       {/* Bottom Section (Matches Screenshot 1 Bottom Controls) */}
       <div className="pt-3 border-t border-slate-200 dark:border-charcoal-750 space-y-3">
-        {/* Switch: Resident View TOGGLE Pill */}
-        <button
-          onClick={toggleResidentView}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 dark:bg-charcoal-800 hover:bg-slate-100 dark:hover:bg-charcoal-750 border border-slate-200 dark:border-charcoal-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors"
-          title="Switch User Role (Resident, Volunteer, Authority, Admin)"
-        >
-          <div className="flex items-center gap-2">
-            <ArrowRightLeft className="w-3.5 h-3.5 text-pine-800 dark:text-pine-400" />
-            <span className="capitalize">Switch: {user.role} View</span>
+        {/* Role Security Status Badge */}
+        <div className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-charcoal-800 border border-slate-200/80 dark:border-charcoal-700 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <Shield className="w-3.5 h-3.5 text-pine-800 dark:text-pine-400 flex-shrink-0" />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">
+              {getRoleDisplayName()}
+            </span>
           </div>
-          <span className="text-[10px] uppercase font-bold text-slate-400">
-            TOGGLE
+          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex-shrink-0">
+            Authorized
           </span>
-        </button>
+        </div>
 
         {/* User Badge: Arvind K. • 485 Karma • Rank #4 (Matches Screenshot 1) */}
         <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-charcoal-800 border border-slate-200/80 dark:border-charcoal-700">

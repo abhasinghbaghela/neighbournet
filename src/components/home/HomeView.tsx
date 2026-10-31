@@ -57,8 +57,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   // Role-based dedicated dashboard delegation
   if (user.role === 'authority') {
     return (
-      <div>
-        <RoleSwitcherBar currentRole={user.role} onSelectRole={setRole} />
+      <div className="space-y-4">
+        <AuthorizedRoleBadge currentRole={user.role} />
         <MunicipalHomeView
           onOpenReportModal={onOpenReportModal}
           setActiveTab={setActiveTab}
@@ -70,8 +70,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   if (user.role === 'volunteer') {
     return (
-      <div>
-        <RoleSwitcherBar currentRole={user.role} onSelectRole={setRole} />
+      <div className="space-y-4">
+        <AuthorizedRoleBadge currentRole={user.role} />
         <VolunteerHomeView
           onOpenReportModal={onOpenReportModal}
           setActiveTab={setActiveTab}
@@ -83,8 +83,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   if (user.role === 'admin') {
     return (
-      <div>
-        <RoleSwitcherBar currentRole={user.role} onSelectRole={setRole} />
+      <div className="space-y-4">
+        <AuthorizedRoleBadge currentRole={user.role} />
         <AdminHomeView
           onOpenReportModal={onOpenReportModal}
           setActiveTab={setActiveTab}
@@ -143,8 +143,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150">
-      {/* Role Switcher Bar */}
-      <RoleSwitcherBar currentRole={user.role} onSelectRole={setRole} />
+      {/* Authorized Role Badge */}
+      <AuthorizedRoleBadge currentRole={user.role} />
 
       {/* Top Banner / Sector Jurisdiction Tag (Matches Screenshot 1) */}
       <div className="space-y-1">
@@ -495,64 +495,64 @@ export const HomeView: React.FC<HomeViewProps> = ({
   );
 };
 
-// Quick-Switch Role Pill Bar
-const RoleSwitcherBar: React.FC<{ currentRole: UserRole; onSelectRole: (role: UserRole) => void }> = ({
-  currentRole,
-  onSelectRole
-}) => {
-  const roles: { role: UserRole; label: string; desc: string; icon: any; color: string }[] = [
-    { role: 'resident', label: 'Resident Citizen', desc: 'Ward Reports & Consensus Quorum', icon: Users, color: 'hover:border-pine-800' },
-    { role: 'authority', label: 'Municipal Officer', desc: 'Field Orders, BWSSB/BESCOM & SLAs', icon: Building2, color: 'hover:border-blue-600' },
-    { role: 'volunteer', label: 'Community Volunteer', desc: 'Quorum Acceleration & Moderation', icon: ShieldAlert, color: 'hover:border-purple-600' },
-    { role: 'admin', label: 'Society Admin', desc: 'Approvals, Notices & Governance', icon: Shield, color: 'hover:border-emerald-600' }
-  ];
+// Authorized Role Status Badge (Read-only security badge, role switching disabled)
+const AuthorizedRoleBadge: React.FC<{ currentRole: UserRole }> = ({ currentRole }) => {
+  const roleConfig: Record<UserRole, { label: string; desc: string; icon: any; badgeText: string }> = {
+    resident: {
+      label: 'Resident Citizen',
+      desc: 'Ward 14 Hyperlocal Quorum & Incident Verification Active',
+      icon: Users,
+      badgeText: 'Citizen Access'
+    },
+    authority: {
+      label: 'Municipal Officer',
+      desc: 'Authorized for BWSSB, BESCOM & PWD Work Order Dispatch & SLAs',
+      icon: Building2,
+      badgeText: 'Municipal Field Access'
+    },
+    volunteer: {
+      label: 'Community Volunteer Sentinel',
+      desc: 'Authorized for 2.5x Consensus Weighting & Report Moderation',
+      icon: ShieldAlert,
+      badgeText: 'Sentinel Access'
+    },
+    admin: {
+      label: 'Society Administrator',
+      desc: 'Authorized for Resident Approvals, Sirens & Society Governance',
+      icon: Shield,
+      badgeText: 'Society Governance'
+    }
+  };
 
-  const currentRoleObj = roles.find(r => r.role === currentRole) || roles[0];
+  const current = roleConfig[currentRole] || roleConfig.resident;
+  const Icon = current.icon;
 
   return (
-    <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-charcoal-850 border border-slate-200/90 dark:border-charcoal-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-charcoal-850 border border-slate-200/90 dark:border-charcoal-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-pine-800 text-white flex items-center justify-center flex-shrink-0">
-          <currentRoleObj.icon className="w-4 h-4" />
+        <div className="w-8 h-8 rounded-xl bg-pine-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+          <Icon className="w-4 h-4" />
         </div>
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Active Dashboard:
+              Authorized Persona:
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-pine-100 dark:bg-pine-950/60 text-pine-900 dark:text-pine-200 border border-pine-200 dark:border-pine-800">
-              {currentRoleObj.label}
+            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-pine-100 dark:bg-pine-950/60 text-pine-900 dark:text-pine-200 border border-pine-200 dark:border-pine-800">
+              {current.label}
             </span>
           </div>
-          <p className="text-[10px] text-slate-400">
-            {currentRoleObj.desc}
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            {current.desc}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-[10px] text-slate-400 font-semibold mr-1 hidden lg:inline">
-          Switch View:
+      <div className="flex items-center gap-2 self-start sm:self-auto">
+        <span className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px] border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>{current.badgeText}</span>
         </span>
-        {roles.map(r => {
-          const Icon = r.icon;
-          const isCurrent = currentRole === r.role;
-
-          return (
-            <button
-              key={r.role}
-              onClick={() => onSelectRole(r.role)}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                isCurrent
-                  ? 'bg-pine-800 text-white shadow-sm'
-                  : 'bg-slate-50 dark:bg-charcoal-750 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-charcoal-700 border border-slate-200/70 dark:border-charcoal-600'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{r.label}</span>
-            </button>
-          );
-        })}
       </div>
     </div>
   );

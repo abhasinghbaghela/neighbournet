@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ShieldAlert } from 'lucide-react';
 import { I18nProvider } from './context/I18nContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { IncidentProvider } from './context/IncidentContext';
@@ -22,7 +23,7 @@ import { IncidentDossierModal } from './components/feed/IncidentDossierModal';
 import { Incident } from './types';
 
 const MainLayout: React.FC = () => {
-  const { celebrationModal, closeCelebrationModal, isAuthenticated } = useAuth();
+  const { celebrationModal, closeCelebrationModal, isAuthenticated, user } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>('home');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -77,7 +78,31 @@ const MainLayout: React.FC = () => {
 
       {activeTab === 'health' && <HealthScoreView />}
 
-      {activeTab === 'admin' && <AdminDashboard />}
+      {activeTab === 'admin' && (
+        user.role === 'admin' || user.role === 'authority' ? (
+          <AdminDashboard />
+        ) : (
+          <div className="p-8 max-w-lg mx-auto text-center space-y-4 my-12 bg-white dark:bg-charcoal-900 rounded-3xl border border-slate-200 dark:border-charcoal-700 shadow-xl">
+            <div className="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center">
+              <ShieldAlert className="w-8 h-8" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                Restricted Authority Console
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                You are currently signed in as <strong>{user.name}</strong> ({user.role}). This section requires Society Administrator or Municipal Officer credentials.
+              </p>
+            </div>
+            <button
+              onClick={() => setActiveTab('home')}
+              className="px-5 py-2.5 rounded-xl bg-pine-800 hover:bg-pine-900 text-white font-bold text-xs shadow-sm transition-all"
+            >
+              Return to Your Dashboard
+            </button>
+          </div>
+        )
+      )}
 
       {activeTab === 'notifications' && (
         <div className="p-4 sm:p-6 max-w-4xl mx-auto">

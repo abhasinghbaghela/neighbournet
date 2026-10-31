@@ -265,30 +265,20 @@ export default function Header({
                 </div>
               </div>
 
-              {/* Role Selection Dropdown */}
-              <div className="p-1 space-y-1">
-                <div className="px-2 pt-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Switch Civic View / Role
+              {/* User Role & Jurisdiction Card */}
+              <div className="p-2 space-y-1 bg-slate-50 dark:bg-charcoal-800/60 rounded-xl my-1 border border-slate-100 dark:border-charcoal-750">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">Security Role</span>
+                  <span className="font-black text-pine-800 dark:text-pine-400 capitalize">
+                    {user.role === 'authority' ? 'Municipal Officer' : user.role === 'volunteer' ? 'Community Sentinel' : user.role === 'admin' ? 'Society Admin' : 'Resident Citizen'}
+                  </span>
                 </div>
-                {roles.map(r => (
-                  <button
-                    key={r.role}
-                    onClick={() => {
-                      setRole(r.role);
-                      setIsRoleDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex flex-col transition-colors ${
-                      user.role === r.role
-                        ? 'bg-pine-800 text-white font-bold'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-charcoal-800'
-                    }`}
-                  >
-                    <span>{r.label}</span>
-                    <span className={`text-[10px] ${user.role === r.role ? 'text-pine-200' : 'text-slate-400'}`}>
-                      {r.desc}
-                    </span>
-                  </button>
-                ))}
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">Jurisdiction</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {user.neighbourhood ? user.neighbourhood.split('(')[0].trim() : 'Ward 14'}
+                  </span>
+                </div>
               </div>
 
               {/* Demo Tour Button */}
