@@ -67,7 +67,11 @@ try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
   db = getFirestore(app);
-  storage = getStorage(app);
+  try {
+    storage = getStorage(app);
+  } catch (storageErr) {
+    console.warn('Firebase Storage not active (using canvas base64 & Firestore image storage):', storageErr);
+  }
   isFirebaseInitialized = true;
   console.log('✅ Firebase initialized successfully for project:', firebaseConfig.projectId);
 } catch (error) {
@@ -283,7 +287,10 @@ export async function uploadIncidentPhotoToStorage(
   incidentId: string,
   base64Data: string
 ): Promise<string | null> {
-  if (!isFirebaseInitialized || !storage) return null;
+  if (!isFirebaseInitialized || !storage) {
+    // Return compressed base64 directly so photos are never lost even without Cloud Storage
+    return base64Data;
+  }
   try {
     const fileRef = ref(storage, `incidents/${incidentId}_${Date.now()}.jpg`);
     await uploadString(fileRef, base64Data, 'data_url');
