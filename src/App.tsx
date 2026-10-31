@@ -47,7 +47,7 @@ const MainLayout: React.FC = () => {
       onStartDemoTour={() => setIsDemoTourOpen(true)}
     >
       {/* Dynamic View rendering inside Layout Content */}
-      {activeTab === 'home' && (
+      {(activeTab === 'home' || activeTab === 'feed') && (
         <HomeView
           onOpenReportModal={() => setIsReportModalOpen(true)}
           onOpenSosModal={() => setIsSosModalOpen(true)}

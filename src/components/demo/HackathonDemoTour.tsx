@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Play,
   X,
@@ -40,6 +40,28 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [createdDemoId, setCreatedDemoId] = useState<string | null>(null);
 
+  // Synchronize active view and role dynamically based on current step
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (currentStep === 1 || currentStep === 2) {
+      setActiveTab('home');
+    } else if (currentStep === 3) {
+      setActiveTab('clusters');
+    } else if (currentStep === 4) {
+      setActiveTab('verify');
+    } else if (currentStep === 5) {
+      setActiveTab('notifications');
+    } else if (currentStep === 6 || currentStep === 7) {
+      setRole('authority');
+      setActiveTab('admin');
+    } else if (currentStep === 8) {
+      setActiveTab('home');
+    } else if (currentStep === 9) {
+      setActiveTab('health');
+    }
+  }, [currentStep, isOpen]);
+
   if (!isOpen) return null;
 
   const STEPS = [
@@ -50,7 +72,7 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       actionLabel: 'Execute Step 1 (Create Incident)',
       action: () => {
         setRole('resident');
-        setActiveTab('feed');
+        setActiveTab('home');
         const res = createIncident({
           title: 'Deep Crater Pothole on 100ft Rd Main Carriage',
           category: 'Road Hazards & Potholes',
@@ -75,7 +97,7 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       desc: 'Another resident at the same intersection submits a concurring report.',
       actionLabel: 'Execute Step 2 (Submit Concurring Report)',
       action: () => {
-        setActiveTab('feed');
+        setActiveTab('home');
         createIncident({
           title: 'Damaged Asphalt & Big Hole on 100ft Road',
           category: 'Road Hazards & Potholes',
@@ -96,10 +118,10 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
     {
       step: 3,
       title: '3. AI Identifies Duplicate & Auto-Clusters',
-      desc: 'System compares proximity (22m), category & text similarity, and groups reports into one ticket (+1 duplicate count).',
-      actionLabel: 'View Clustered Incident on Map',
+      desc: 'System compares proximity (22m), category & Gemini semantic similarity, and auto-clusters reports into one unified docket.',
+      actionLabel: 'Advance to Step 4 (Community Verification) →',
       action: () => {
-        setActiveTab('map');
+        setActiveTab('verify');
       }
     },
     {
@@ -108,7 +130,7 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       desc: 'Neighbours cast confirmation upvotes. Once reaching 3+ confirmations, status becomes "Community Verified".',
       actionLabel: 'Execute Step 4 (Cast Consensus Upvotes)',
       action: () => {
-        setActiveTab('feed');
+        setActiveTab('verify');
         const target = incidents.find(i => i.title.includes('Crater Pothole') || i.id === createdDemoId) || incidents[0];
         if (target) {
           verifyIncident(target.id, true);
@@ -119,9 +141,9 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       step: 5,
       title: '5. Nearby Residents Receive Proximity Alert',
       desc: 'NeighbourNet triggers a high-priority proximity alert to residents within 2.5km notification radius.',
-      actionLabel: 'View Notifications Center',
+      actionLabel: 'View Notifications Center →',
       action: () => {
-        setActiveTab('home');
+        setActiveTab('notifications');
       }
     },
     {
@@ -144,6 +166,7 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       desc: 'Field crew dispatches cold-mix asphalt truck to site and updates ticket status to "In Progress".',
       actionLabel: 'Execute Step 7 (Set In Progress)',
       action: () => {
+        setRole('authority');
         setActiveTab('admin');
         const target = incidents.find(i => i.title.includes('Crater Pothole') || i.id === createdDemoId) || incidents[0];
         if (target) {
@@ -157,7 +180,7 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       desc: 'Repair completed, road surface leveled and validated. Ticket marked "Resolved" (+50 XP).',
       actionLabel: 'Execute Step 8 (Mark Resolved)',
       action: () => {
-        setActiveTab('feed');
+        setActiveTab('home');
         const target = incidents.find(i => i.title.includes('Crater Pothole') || i.id === createdDemoId) || incidents[0];
         if (target) {
           updateIncidentStatus(
@@ -173,7 +196,7 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
       step: 9,
       title: '9. Neighbourhood Health Score Updates',
       desc: 'With the hazard cleared, the dynamic 0-100 Neighbourhood Health Score automatically updates in real time!',
-      actionLabel: 'View Health Score Metric',
+      actionLabel: 'Finish Tour & Explore Health Score',
       action: () => {
         setActiveTab('health');
       }
@@ -186,6 +209,8 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
     currentStepData.action();
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1);
+    } else {
+      onClose();
     }
   };
 
@@ -228,6 +253,26 @@ export const HackathonDemoTour: React.FC<HackathonDemoTourProps> = ({
           {currentStepData.desc}
         </p>
       </div>
+
+      {/* Quick View Switcher for Step 3 */}
+      {currentStep === 3 && (
+        <div className="flex items-center gap-2 pt-2">
+          <button
+            onClick={() => setActiveTab('clusters')}
+            className="flex-1 py-1.5 px-2.5 rounded-lg text-[11px] font-bold bg-violet-600/40 hover:bg-violet-600/60 border border-violet-400/40 text-violet-200 transition-all flex items-center justify-center gap-1.5"
+          >
+            <Sparkles className="w-3 h-3 text-amber-300" />
+            <span>AI Deduplication Engine</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('map')}
+            className="flex-1 py-1.5 px-2.5 rounded-lg text-[11px] font-bold bg-charcoal-800 hover:bg-charcoal-750 border border-charcoal-700 text-lavender-300 transition-all flex items-center justify-center gap-1.5"
+          >
+            <Activity className="w-3 h-3 text-emerald-400" />
+            <span>Spatial Map View</span>
+          </button>
+        </div>
+      )}
 
       {/* Progress Pills */}
       <div className="mt-3 flex items-center gap-1">
