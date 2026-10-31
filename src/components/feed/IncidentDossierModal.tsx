@@ -15,12 +15,14 @@ import {
   Camera,
   ExternalLink,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  FileDown
 } from 'lucide-react';
 import { Incident } from '../../types';
 import { useIncidents } from '../../context/IncidentContext';
 import { useAuth } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
+import { downloadIncidentPdf } from '../../services/pdfReportService';
 
 interface IncidentDossierModalProps {
   incident: Incident | null;
@@ -96,6 +98,14 @@ export const IncidentDossierModal: React.FC<IncidentDossierModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => downloadIncidentPdf(incident)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pine-50 dark:bg-pine-950/40 text-pine-800 dark:text-pine-300 hover:bg-pine-100 dark:hover:bg-pine-900/60 text-xs font-bold border border-pine-200 dark:border-pine-800 transition-colors shadow-sm"
+              title="Download Official PDF Problem Report"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Export PDF</span>
+            </button>
             <button
               onClick={handleShare}
               className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-charcoal-800 transition-colors"
@@ -315,6 +325,32 @@ export const IncidentDossierModal: React.FC<IncidentDossierModalProps> = ({
                 </form>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Dossier Footer with PDF Download Action */}
+        <div className="px-6 py-3.5 border-t border-slate-100 dark:border-charcoal-800 bg-slate-50/70 dark:bg-charcoal-850 flex items-center justify-between gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              Official Civic Docket #{incident.id}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => downloadIncidentPdf(incident)}
+              className="py-2 px-4 rounded-xl bg-pine-800 hover:bg-pine-900 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Download PDF Docket</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="py-2 px-3 rounded-xl border border-slate-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

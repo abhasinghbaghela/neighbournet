@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 import {
   X,
   Camera,
@@ -17,7 +18,10 @@ import {
   MoreHorizontal,
   Megaphone,
   Radio,
-  Check
+  Check,
+  FileDown,
+  FileCheck,
+  ArrowRight
 } from 'lucide-react';
 import { IncidentCategory, Severity } from '../../types';
 import { useIncidents } from '../../context/IncidentContext';
@@ -25,6 +29,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
 import { findPotentialDuplicates } from '../../services/duplicateDetector';
 import { saveReportOffline } from '../../services/offlineStorage';
+import { downloadIncidentPdf } from '../../services/pdfReportService';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -56,6 +61,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [duplicates, setDuplicates] = useState<any[]>([]);
+  const [submittedIncident, setSubmittedIncident] = useState<any | null>(null);
+
+  // Reset submitted state when modal is freshly opened
+  useEffect(() => {
+    if (isOpen) {
+      setSubmittedIncident(null);
+    }
+  }, [isOpen]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -170,7 +183,19 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      const docketId = `INC-${Math.floor(100000 + Math.random() * 900000)}`;
+      const assignedDept = selectedCategory.toLowerCase().includes('water')
+        ? 'BWSSB Rapid Unit (Water Supply)'
+        : selectedCategory.toLowerCase().includes('electric')
+        ? 'BESCOM Electrical Response Crew'
+        : selectedCategory.toLowerCase().includes('road')
+        ? 'Municipal PWD Infrastructure Division'
+        : selectedCategory.toLowerCase().includes('sanitation')
+        ? 'Solid Waste & Sanitation Department'
+        : 'Ward 14 Civic Action Desk';
+
       const incidentPayload = {
+        id: docketId,
         title: title || `${selectedCategory} Reported`,
         category: selectedCategory as any,
         severity,
@@ -179,24 +204,45 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           lat,
           lng,
           address,
-          ward: 'Ward 14'
+          ward: 'Ward 14 (Greenwood Heights)'
         },
         imageUrl: imagePreview || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80',
-        isAnonymous
+        isAnonymous,
+        reporterName: isAnonymous ? 'Anonymous Citizen' : (user?.name || 'Resident Citizen'),
+        createdAt: new Date().toISOString(),
+        status: 'Community Verification Pending',
+        confirmationsCount: 1,
+        assignedTo: assignedDept
       };
 
       if (!isOnline) {
         saveReportOffline(incidentPayload);
-        alert('Offline: Your report has been saved locally and will auto-sync when online.');
       } else {
         await createIncident(incidentPayload);
       }
 
-      onClose();
+      // Automatically generate and download the PDF Docket
+      try {
+        downloadIncidentPdf(incidentPayload);
+      } catch (pdfErr) {
+        console.warn('PDF auto-download warning:', pdfErr);
+      }
+
+      // Celebrate with confetti
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 60,
+          origin: { y: 0.6 }
+        });
+      } catch (confettiErr) {
+        // Safe catch
+      }
+
+      // Display the post-submit success view with re-download option
+      setSubmittedIncident(incidentPayload);
     } catch (err) {
       console.error('Error submitting incident:', err);
-      alert('Report submitted successfully to local quorum master.');
-      onClose();
     } finally {
       setIsSubmitting(false);
     }
@@ -222,25 +268,93 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           </button>
         </div>
 
-        {/* Scrollable Content (Matches Screenshot 3) */}
-        <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar space-y-8 flex-1">
-          {/* Header Title Section (Matches Screenshot 3) */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-pine-800 dark:text-pine-400">
-              <Megaphone className="w-4 h-4" />
-              <span className="text-[11px] font-extrabold uppercase tracking-wider font-mono">
-                CIVIC EMERGENCY DISPATCH CHANNEL
-              </span>
+        {/* Modal Body: If Submitted, Show PDF Docket Download View, else Show Form */}
+        {submittedIncident ? (
+          <div className="p-6 sm:p-10 overflow-y-auto custom-scrollbar text-center space-y-6 flex-1 my-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-sm">
+              <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Report a Neighbourhood Incident
-            </h2>
+            <div className="space-y-1.5">
+              <span className="px-3 py-1 rounded-full bg-pine-100 dark:bg-pine-950/60 text-pine-900 dark:text-pine-200 font-extrabold text-xs uppercase tracking-wider border border-pine-200 dark:border-pine-800">
+                Official Docket #{submittedIncident.id}
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white pt-2">
+                Problem Report Successfully Filed!
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                Your incident has been registered in the Ward 14 safety grid. An official civic problem report PDF has been generated.
+              </p>
+            </div>
 
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
-              Provide accurate ground details. Once 5 verified residents co-sign your report, an automatic municipal priority dispatch order is triggered.
-            </p>
+            {/* Incident Summary Card */}
+            <div className="max-w-md mx-auto p-4 rounded-2xl bg-slate-50 dark:bg-charcoal-800 border border-slate-200 dark:border-charcoal-700 text-left space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-900 dark:text-white truncate">
+                  {submittedIncident.title}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                  {submittedIncident.severity}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                {submittedIncident.description}
+              </p>
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300 font-medium pt-1 border-t border-slate-200/60 dark:border-charcoal-700">
+                <MapPin className="w-3.5 h-3.5 text-pine-800 flex-shrink-0" />
+                <span className="truncate">{submittedIncident.location.address}</span>
+              </div>
+            </div>
+
+            {/* PDF Auto-Download Notification */}
+            <div className="max-w-md mx-auto p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2">
+              <FileCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Official PDF Problem Report has been generated & downloaded to your device!</span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="max-w-md mx-auto flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => downloadIncidentPdf(submittedIncident)}
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-pine-800 hover:bg-pine-900 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>Download PDF Report Again</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmittedIncident(null);
+                  onClose();
+                }}
+                className="w-full sm:w-auto py-3 px-5 rounded-xl border border-slate-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-800 hover:bg-slate-50 text-slate-700 dark:text-slate-300 font-bold text-xs transition-all"
+              >
+                Done / Close
+              </button>
+            </div>
           </div>
+        ) : (
+          /* Scrollable Content (Matches Screenshot 3) */
+          <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar space-y-8 flex-1">
+            {/* Header Title Section (Matches Screenshot 3) */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-pine-800 dark:text-pine-400">
+                <Megaphone className="w-4 h-4" />
+                <span className="text-[11px] font-extrabold uppercase tracking-wider font-mono">
+                  CIVIC EMERGENCY DISPATCH CHANNEL
+                </span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Report a Neighbourhood Incident
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
+                Provide accurate ground details. Once 5 verified residents co-sign your report, an automatic municipal priority dispatch order is triggered.
+              </p>
+            </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -505,6 +619,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </div>
           </form>
         </div>
+        )}
       </div>
     </div>
   );
