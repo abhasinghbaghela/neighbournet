@@ -35,6 +35,69 @@ import { MunicipalHomeView } from './MunicipalHomeView';
 import { VolunteerHomeView } from './VolunteerHomeView';
 import { AdminHomeView } from './AdminHomeView';
 
+// Authorized Role Status Badge (Declared before HomeView to prevent TDZ ReferenceError)
+function AuthorizedRoleBadge({ currentRole }: { currentRole: UserRole }) {
+  const roleConfig: Record<UserRole, { label: string; desc: string; icon: any; badgeText: string }> = {
+    resident: {
+      label: 'Resident Citizen',
+      desc: 'Ward 14 Hyperlocal Quorum & Incident Verification Active',
+      icon: Users,
+      badgeText: 'Citizen Access'
+    },
+    authority: {
+      label: 'Municipal Officer',
+      desc: 'Authorized for BWSSB, BESCOM & PWD Work Order Dispatch & SLAs',
+      icon: Building2,
+      badgeText: 'Municipal Field Access'
+    },
+    volunteer: {
+      label: 'Community Volunteer Sentinel',
+      desc: 'Authorized for 2.5x Consensus Weighting & Report Moderation',
+      icon: ShieldAlert,
+      badgeText: 'Sentinel Access'
+    },
+    admin: {
+      label: 'Society Administrator',
+      desc: 'Authorized for Resident Approvals, Sirens & Society Governance',
+      icon: Shield,
+      badgeText: 'Society Governance'
+    }
+  };
+
+  const current = roleConfig[currentRole] || roleConfig.resident;
+  const Icon = current.icon;
+
+  return (
+    <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-charcoal-850 border border-slate-200/90 dark:border-charcoal-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-pine-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+          <Icon className="w-4 h-4" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Authorized Persona:
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-pine-100 dark:bg-pine-950/60 text-pine-900 dark:text-pine-200 border border-pine-200 dark:border-pine-800">
+              {current.label}
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            {current.desc}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 self-start sm:self-auto">
+        <span className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px] border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>{current.badgeText}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 interface HomeViewProps {
   onOpenReportModal: () => void;
   onOpenSosModal?: () => void;
@@ -490,69 +553,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-// Authorized Role Status Badge (Read-only security badge, role switching disabled)
-const AuthorizedRoleBadge: React.FC<{ currentRole: UserRole }> = ({ currentRole }) => {
-  const roleConfig: Record<UserRole, { label: string; desc: string; icon: any; badgeText: string }> = {
-    resident: {
-      label: 'Resident Citizen',
-      desc: 'Ward 14 Hyperlocal Quorum & Incident Verification Active',
-      icon: Users,
-      badgeText: 'Citizen Access'
-    },
-    authority: {
-      label: 'Municipal Officer',
-      desc: 'Authorized for BWSSB, BESCOM & PWD Work Order Dispatch & SLAs',
-      icon: Building2,
-      badgeText: 'Municipal Field Access'
-    },
-    volunteer: {
-      label: 'Community Volunteer Sentinel',
-      desc: 'Authorized for 2.5x Consensus Weighting & Report Moderation',
-      icon: ShieldAlert,
-      badgeText: 'Sentinel Access'
-    },
-    admin: {
-      label: 'Society Administrator',
-      desc: 'Authorized for Resident Approvals, Sirens & Society Governance',
-      icon: Shield,
-      badgeText: 'Society Governance'
-    }
-  };
-
-  const current = roleConfig[currentRole] || roleConfig.resident;
-  const Icon = current.icon;
-
-  return (
-    <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-charcoal-850 border border-slate-200/90 dark:border-charcoal-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-pine-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-          <Icon className="w-4 h-4" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Authorized Persona:
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-pine-100 dark:bg-pine-950/60 text-pine-900 dark:text-pine-200 border border-pine-200 dark:border-pine-800">
-              {current.label}
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-            {current.desc}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 self-start sm:self-auto">
-        <span className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px] border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{current.badgeText}</span>
-        </span>
       </div>
     </div>
   );
