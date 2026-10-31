@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import {
   Layers,
   Crosshair,
@@ -22,6 +23,14 @@ import { useIncidents } from '../../context/IncidentContext';
 import { useAuth } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
 
+// Fix Leaflet's default icon paths in bundled environments
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
 interface InteractiveMapProps {
   onSelectIncident: (inc: Incident) => void;
   onOpenReportModal: () => void;
@@ -42,7 +51,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   const [activeLayer, setActiveLayer] = useState<string>('All');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-  const [autoSync, setAutoSync] = useState(true);
 
   const layers = [
     { id: 'All', label: 'All Layers' },
@@ -62,45 +70,84 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     return true;
   });
 
-  // Automatically select the first incident (Test Street Light Issue or similar) if none selected
+  // Automatically select the first incident if none selected
   useEffect(() => {
     if (!selectedIncident && filteredIncidents.length > 0) {
       setSelectedIncident(filteredIncidents[0]);
     }
   }, [filteredIncidents, selectedIncident]);
 
-  // Initialize Leaflet Map
+  // Initialize and tear down Leaflet Map cleanly
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    if (!mapInstanceRef.current) {
-      const defaultLat = 12.9716;
-      const defaultLng = 77.6413;
-
-      const map = L.map(mapContainerRef.current, {
-        center: [defaultLat, defaultLng],
-        zoom: 15,
-        zoomControl: false
-      });
-
-      // Reliable, free OpenStreetMap tiles with no API key requirement or watermark
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
-      }).addTo(map);
-
-      // Re-position zoom control to top-left or top-right
-      L.control.zoom({ position: 'topleft' }).addTo(map);
-
-      // Layer groups for markers & circles
-      markersLayerRef.current = L.layerGroup().addTo(map);
-      circlesLayerRef.current = L.layerGroup().addTo(map);
-
-      mapInstanceRef.current = map;
+    // Destroy any existing map instance on this DOM container before mounting
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.remove();
+      } catch (e) {
+        // Safe catch
+      }
+      mapInstanceRef.current = null;
     }
 
+    const defaultLat = 12.9719;
+    const defaultLng = 77.6412;
+
+    const map = L.map(mapContainerRef.current, {
+      center: [defaultLat, defaultLng],
+      zoom: 15,
+      zoomControl: false,
+      attributionControl: true
+    });
+
+    // Modern, crisp, free tiles (CartoDB Voyager) with OpenStreetMap tile fallback
+    const tileLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+      }
+    ).addTo(map);
+
+    tileLayer.on('tileerror', () => {
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+    });
+
+    // Zoom control
+    L.control.zoom({ position: 'topleft' }).addTo(map);
+
+    // Layer groups for markers & circles
+    const markersGroup = L.layerGroup().addTo(map);
+    const circlesGroup = L.layerGroup().addTo(map);
+
+    markersLayerRef.current = markersGroup;
+    circlesLayerRef.current = circlesGroup;
+    mapInstanceRef.current = map;
+
+    // Force Leaflet to recalculate container bounds after mount
+    const timer1 = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    const timer2 = setTimeout(() => {
+      map.invalidateSize();
+    }, 500);
+
     return () => {
-      // Keep map instance alive across fast re-renders
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      try {
+        map.remove();
+      } catch (e) {
+        // Safe catch
+      }
+      mapInstanceRef.current = null;
+      markersLayerRef.current = null;
+      circlesLayerRef.current = null;
     };
   }, []);
 
@@ -116,10 +163,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     circlesGroup.clearLayers();
 
     filteredIncidents.forEach(inc => {
+      if (!inc.location || typeof inc.location.lat !== 'number' || typeof inc.location.lng !== 'number') {
+        return;
+      }
+
       const isSelected = selectedIncident?.id === inc.id;
 
       // Category color
-      let pinColor = '#09544c'; // Default Pine Teal
+      let pinColor = '#09544c'; // Pine Teal
       if (inc.category.toLowerCase().includes('water')) pinColor = '#0284c7';
       else if (inc.category.toLowerCase().includes('road')) pinColor = '#d97706';
       else if (inc.category.toLowerCase().includes('electric')) pinColor = '#eab308';
@@ -177,7 +228,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       });
       markersGroup.addLayer(marker);
 
-      // Radius circle around selected incident showing neighbourhood quorum zone (150m)
+      // 150m neighbourhood quorum radius circle around selected incident
       if (isSelected) {
         const circle = L.circle([inc.location.lat, inc.location.lng], {
           radius: 180,
@@ -195,8 +246,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   }, [filteredIncidents, selectedIncident]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-var(--header-height))] overflow-hidden bg-slate-100 select-none">
-      {/* Top Map Controls Bar (Matches Screenshot 2) */}
+    <div className="relative w-full h-[calc(100vh-var(--header-height))] min-h-[500px] overflow-hidden bg-slate-100 select-none">
+      {/* Top Map Controls Bar */}
       <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
         {/* Category Layer Filter Pills */}
         <div className="flex items-center gap-2 bg-white/95 dark:bg-charcoal-900/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-charcoal-700 shadow-md pointer-events-auto">
@@ -218,7 +269,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           })}
         </div>
 
-        {/* Counter & Sync Badge (Matches Screenshot 2: 4 Pins Live in Ward 14 • Auto-Sync) */}
+        {/* Counter & Sync Badge */}
         <div className="flex items-center gap-2 bg-white/95 dark:bg-charcoal-900/95 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-200/80 dark:border-charcoal-700 shadow-md pointer-events-auto text-xs font-semibold text-slate-700 dark:text-slate-300">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>{filteredIncidents.length} Pins Live in Ward 14 • Auto-Sync</span>
@@ -228,8 +279,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       {/* Recenter Button */}
       <button
         onClick={() => {
-          if (mapInstanceRef.current && selectedIncident) {
+          if (mapInstanceRef.current && selectedIncident?.location) {
             mapInstanceRef.current.setView([selectedIncident.location.lat, selectedIncident.location.lng], 16, { animate: true });
+          } else if (mapInstanceRef.current) {
+            mapInstanceRef.current.setView([12.9719, 77.6412], 15, { animate: true });
           }
         }}
         className="absolute top-20 right-4 z-20 p-2.5 rounded-xl bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-charcoal-700 shadow-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-colors"
@@ -239,9 +292,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </button>
 
       {/* Map Canvas */}
-      <div ref={mapContainerRef} className="w-full h-full z-10" />
+      <div
+        ref={mapContainerRef}
+        className="w-full h-full z-10"
+        style={{ minHeight: '500px', height: '100%' }}
+      />
 
-      {/* Selected Incident Floating Bottom-Sheet Card (Matches Screenshot 2) */}
+      {/* Selected Incident Floating Bottom-Sheet Card */}
       {selectedIncident && (
         <div className="absolute bottom-6 right-4 left-4 sm:left-auto sm:w-96 z-30 bg-white dark:bg-charcoal-900 rounded-2xl border border-slate-200/80 dark:border-charcoal-700 shadow-2xl p-4 animate-in slide-in-from-bottom-4 duration-200">
           {/* Card Top: Badges & Close Button */}
